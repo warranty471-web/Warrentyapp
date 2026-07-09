@@ -2,7 +2,8 @@ const CACHE_NAME = 'warrantykeep-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/logo.jpg',
+  '/icon-192.png',
+  '/icon-512.png',
   '/manifest.json'
 ];
 
