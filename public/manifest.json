@@ -2,6 +2,9 @@
   "short_name": "WarrantyKeep",
   "name": "WarrantyKeep - Track Warranties & Service Schedules",
   "description": "Track warranties, receipts, and service schedules for appliances, gadgets, and vehicles with automated email reminders.",
+  "id": "/",
+  "categories": ["utilities", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
@@ -14,6 +17,20 @@
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "type": "image/png",
+      "sizes": "1080x1920",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "type": "image/png",
+      "sizes": "192x1080",
+      "form_factor": "wide"
     }
   ],
   "start_url": "/",
