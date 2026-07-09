@@ -10,7 +10,7 @@ import ProfileSettings from './pages/ProfileSettings';
 import { Shield, Home, Bell, User, PlusCircle, Loader2 } from 'lucide-react';
 
 // Bottom Navigation Wrapper Component
-function MainLayout({ children, unreadCount }) {
+function MainLayout({ children, unreadCount, showInstallBanner, onInstall, onDismiss }) {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -20,6 +20,35 @@ function MainLayout({ children, unreadCount }) {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       
+      {/* Custom PWA Install Banner */}
+      {showInstallBanner && (
+        <div className="w-full max-w-lg mx-auto bg-gradient-to-r from-primary-600 to-indigo-600 text-white p-3.5 flex items-center justify-between shadow-md relative z-50 animate-fade-in shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">📱</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold leading-tight">Install WarrantyKeep</span>
+              <span className="text-[10px] text-indigo-100 mt-0.5">Add to Home screen for quick offline access</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onInstall}
+              type="button"
+              className="px-3 py-1.5 bg-white text-primary-600 rounded-lg text-xs font-bold shadow-sm hover:bg-slate-50 transition-all tap-bounce cursor-pointer"
+            >
+              Install
+            </button>
+            <button
+              onClick={onDismiss}
+              type="button"
+              className="p-1.5 text-indigo-200 hover:text-white transition-all text-xs font-black cursor-pointer leading-none"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* App Main View */}
       <div className="flex-1 w-full max-w-lg mx-auto bg-slate-50">
         {children}
@@ -86,6 +115,39 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  // PWA Install Event Prompt states
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the browser's default prompt layout
+      e.preventDefault();
+      // Store the event so it can be triggered later
+      setInstallPrompt(e);
+      // Show our custom, user-friendly in-app banner
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!installPrompt) return;
+    // Show the browser install confirmation dialog
+    installPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+      setShowInstallBanner(false);
+    }
+  };
 
   // Auto-verify and create profile if missing (e.g. user existed before migration)
   const ensureProfileExists = useCallback(async (user) => {
@@ -216,7 +278,12 @@ export default function App() {
           path="/*"
           element={
             session ? (
-              <MainLayout unreadCount={unreadNotifications}>
+              <MainLayout 
+                unreadCount={unreadNotifications}
+                showInstallBanner={showInstallBanner}
+                onInstall={handleInstallApp}
+                onDismiss={() => setShowInstallBanner(false)}
+              >
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/add" element={<AddEditItem />} />
