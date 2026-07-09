@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /#/
+Disallow: /dashboard/
+Disallow: /add/
+Disallow: /edit/
+Disallow: /item/
+Disallow: /notifications/
+Disallow: /profile/
+
+Sitemap: https://warrentyapp.vercel.app/sitemap.xml
