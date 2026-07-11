@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { getCategoryDetails, CATEGORIES } from '../utils/categoryHelper';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Plus, Calendar, Shield, AlertTriangle, XCircle, SearchX, Inbox, ChevronRight } from 'lucide-react';
+import { Search, Plus, Calendar, Shield, AlertTriangle, XCircle, SearchX, Inbox, ChevronRight, IndianRupee } from 'lucide-react';
 
 export default function Dashboard() {
   const [items, setItems] = useState([]);
@@ -15,7 +15,9 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     active: 0,
     expiringSoon: 0,
-    expired: 0
+    expired: 0,
+    totalValue: 0,
+    protectedItemCount: 0
   });
 
   const fetchItems = async () => {
@@ -52,6 +54,8 @@ export default function Dashboard() {
     let active = 0;
     let expiringSoon = 0;
     let expired = 0;
+    let totalValue = 0;
+    let protectedItemCount = 0;
 
     itemList.forEach(item => {
       const expiry = new Date(item.warranty_expiry_date);
@@ -61,14 +65,22 @@ export default function Dashboard() {
 
       if (diffDays < 0) {
         expired++;
-      } else if (diffDays <= 30) {
-        expiringSoon++;
       } else {
-        active++;
+        if (diffDays <= 30) {
+          expiringSoon++;
+        } else {
+          active++;
+        }
+
+        const price = Number(item.purchase_price);
+        if (item.purchase_price !== null && !isNaN(price) && price > 0) {
+          totalValue += price;
+          protectedItemCount++;
+        }
       }
     });
 
-    setStats({ active, expiringSoon, expired });
+    setStats({ active, expiringSoon, expired, totalValue, protectedItemCount });
   };
 
   const getDaysLeft = (expiryDateStr) => {
@@ -133,6 +145,29 @@ export default function Dashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">WarrantyKeep</h1>
           <p className="text-xs text-slate-500">Track coverages and schedules</p>
+        </div>
+      </div>
+
+      {/* Total Value Protected Card */}
+      <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 mb-4 animate-fade-in">
+        <div className="w-12 h-12 rounded-2xl bg-[#7c3aed] flex items-center justify-center shrink-0 shadow-md shadow-[#7c3aed]/25">
+          <IndianRupee className="w-5.5 h-5.5 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="block text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">
+            {new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0
+            }).format(stats.totalValue)}
+          </span>
+          <span className="block text-xs font-bold text-slate-800">Total Value Protected</span>
+          <span className="block text-[10px] font-medium text-slate-455 mt-0.5 text-slate-400">
+            {stats.totalValue > 0 
+              ? `${stats.protectedItemCount} ${stats.protectedItemCount === 1 ? 'item' : 'items'} under active warranty`
+              : 'Add items with purchase price to see your protected value'
+            }
+          </span>
         </div>
       </div>
 
